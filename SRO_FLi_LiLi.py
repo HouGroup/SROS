@@ -24,12 +24,10 @@ class SRO:
         self.a_idxs = self.get_idxs("F")  # Obtain all the index numbers of F
         self.b_idxs = self.get_idxs("O")
         self.c_idxs = self.get_idxs("Li")  # self.d_idxs are the indexs of TM
-        self.d_idxs = list(
-            set(list(range(0, self.structure.num_sites))) - set(self.a_idxs) - set(self.b_idxs) - set(self.c_idxs))
+        self.d_idxs = list(set(list(range(0, self.structure.num_sites))) - set(self.a_idxs) - set(self.b_idxs) - set(self.c_idxs))
         self.cnn = CrystalNN()
         self.bnn = BrunnerNN_real()
-        self.anion_cn = self.cnn.get_cn(self.structure,
-                                        -1)  # Anion coordination number, which is 6 in DRX. -1 refers to  the last atom.
+        self.anion_cn = self.cnn.get_cn(self.structure,-1)  # Anion coordination number, which is 6 in DRX. -1 refers to  the last atom.
         self.cation_cn = 12  # cation-cation coordination number, which is 12 in DRX.
         self.a = self.alpha()  # alpha_FLi
         self.a_LiLi = self.alpha_LiLi()  # alpha_LiLi
@@ -158,11 +156,9 @@ class SRO:
         while True:
             a_neighbor = int(self.cnn.get_nn(self.structure, a_site)[random.randrange(self.anion_cn)].index)
             b_neighbor = int(self.cnn.get_nn(self.structure, b_site)[random.randrange(self.anion_cn)].index)
-            if (self.structure.species[a_neighbor] == Element(self.cation) and self.structure.species[
-                b_neighbor] != Element(self.cation)):
+            if (self.structure.species[a_neighbor] == Element(self.cation) and self.structure.species[b_neighbor] != Element(self.cation)):
                 break
-            elif self.structure.species[a_neighbor] != Element(self.cation) and self.structure.species[
-                b_neighbor] == Element(self.cation):
+            elif self.structure.species[a_neighbor] != Element(self.cation) and self.structure.species[b_neighbor] == Element(self.cation):
                 target = False
                 break
 
@@ -208,12 +204,10 @@ class SRO:
         while True:
             c_neighbor = int(self.get_Li_2NN_environment(c_site)[random.randrange(self.cation_cn)].index)
             d_neighbor = int(self.get_Li_2NN_environment(d_site)[random.randrange(self.cation_cn)].index)
-            if (self.structure.species[c_neighbor] == Element(self.cation) and self.structure.species[
-                d_neighbor] != Element(self.cation)):
+            if (self.structure.species[c_neighbor] == Element(self.cation) and self.structure.species[d_neighbor] != Element(self.cation)):
                 break
                 # 即如果Li周围选中的是Li，TM周围选中的是TM，则保持target=True并进入下一步
-            elif self.structure.species[c_neighbor] != Element(self.cation) and self.structure.species[
-                d_neighbor] == Element(self.cation):
+            elif self.structure.species[c_neighbor] != Element(self.cation) and self.structure.species[d_neighbor] == Element(self.cation):
                 target = False
                 # 即如果Li周围选中的是TM，TM周围选中的是Li，则使target=False并进入下一步
                 break
