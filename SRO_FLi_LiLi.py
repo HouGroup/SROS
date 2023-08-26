@@ -169,12 +169,12 @@ class SRO:
         if random.random() < prob:  # a site coordinate with target cation
             if not target:
                 self.exchange_site(a_neighbor, b_neighbor)
-                print("More neighboring")  # new_alpha <= old_alpha
+                print("More neighboring F-Li")  # new_alpha <= old_alpha
                 self.a = self.alpha()
         else:  # a site not coordinate with target cation
             if target:
                 self.exchange_site(a_neighbor, b_neighbor)
-                print("Less neighboring")  # new_alpha >= old_alpha
+                print("Less neighboring F-Li")  # new_alpha >= old_alpha
                 self.a = self.alpha()
         return self.a
 
@@ -229,23 +229,30 @@ class SRO:
         return self.a_LiLi
 
     def run(self, max_steps: int,
-            # target_alpha: Union[int, float] = 0,
+            target_alpha: Union[int, float] = 0,
             target_alpha_LiLi: Union[int, float] = 0,
             rate: Union[int, float] = 1,
             tol: Union[int, float] = 0.05,
             random_seed: Union[None, int] = None,
             ):
         random.seed(random_seed)
-        old_alpha_LiLi = self.a_LiLi
-        print("Innitial alpha_LiLi:", self.a_LiLi, "Innitial Li-Li:", self.get_neighbor_LiLi())
+        print("Innitial alpha_FLi:", self.alpha(), "Innitial F-Li:", self.get_neighbor(self.anion_a, self.cation))
+        print("Innitial alpha_LiLi:", self.alpha_LiLi(), "Innitial Li-Li:", self.get_neighbor_LiLi())
         for i in range(max_steps):
-            self.exchange_LiLi(target_alpha_LiLi, rate, random_seed=random.randrange(1000))
-            print("New alpha_LiLi:", self.a_LiLi, "New Li-Li:", self.get_neighbor_LiLi())
+            self.exchange(target_alpha, rate, random_seed=random.randrange(1000))
+            print("New alpha_FLi:", self.alpha(), "F-Li:", self.get_neighbor(self.anion_a, self.cation))
+            print("New alpha_LiLi:", self.alpha_LiLi(), "Li-Li:", self.get_neighbor_LiLi())
+            if abs(self.a - target_alpha) <= tol and abs(self.a_LiLi - target_alpha_LiLi) <= tol:
+                print("Final F-Li:", self.get_neighbor(self.anion_a, self.cation), "Final Li-Li:", self.get_neighbor_LiLi())
+                return "Target alpha reached"
 
-            if abs(self.a_LiLi - target_alpha_LiLi) <= tol:
-                print("Final Li-Li:", self.get_neighbor_LiLi())
-                return "Target alpha_LiLi reached"
-            old_alpha_LiLi = self.a_LiLi
+            self.exchange_LiLi(target_alpha_LiLi, rate, random_seed=random.randrange(1000))
+            print("New alpha_FLi:", self.alpha(), "F-Li:", self.get_neighbor(self.anion_a, self.cation))
+            print("New alpha_LiLi:", self.alpha_LiLi(), "Li-Li:", self.get_neighbor_LiLi())
+            if abs(self.a - target_alpha) <= tol and abs(self.a_LiLi - target_alpha_LiLi) <= tol:
+                print("Final F-Li:", self.get_neighbor(self.anion_a, self.cation), "Final Li-Li:", self.get_neighbor_LiLi())
+                return "Target alpha reached"
+
         return "Target alpha not reached"
 
     def to_file(self, path):
