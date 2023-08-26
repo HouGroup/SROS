@@ -119,8 +119,10 @@ class SRO:
             tol: Union[int, float] = 0.05,
             random_seed: Union[None, int] = None,
             ):
+        random.seed(random_seed)
         old_alpha = self.a
         for i in range(max_steps):
+            self.exchange(target_alpha, rate, random_seed=random.randrange(1000))
             self.exchange(target_alpha, rate, random_seed)
             print(self.a)
             if old_alpha == self.a and abs(self.a - target_alpha) <= tol:
