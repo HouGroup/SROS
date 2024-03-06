@@ -20,29 +20,16 @@ Functionality
 -------------
 **SROS** currently includes the following functionality:
 
--   Defining cluster expansion functions for a given disordered structure using a
-    variety of available site basis functions with and without explicit
-    redundancy.
+-   Special quasi-random structure generation based on either correlation vectors or cluster interaction vectors.
 
--   Option to include explicit electrostatics in expansions using the Ewald summation
-    method.
--   Computing correlation vectors for a set of training structures with a variety
-    of functionality to inspect the resulting feature matrix.
+-   Constructing a rational first-nearest-neighbor (1NN) coordination environment, quantified by the Warren–Cowley SRO parameter αFLi.
 
--   Defining fitted cluster expansions for subsequent property prediction.
--   Fast evaluation of correlation vectors and differences in correlation vectors
-    from local updates in order to quickly compute properties and changes in
-    properties for specified supercell sizes.
+-   Constructing a rational second-nearest-neighbor (2NN) coordination environment, quantified by the Warren–Cowley SRO parameter αLiLi.
 
--   Flexible toolset to sample cluster expansions using Monte Carlo with
-    canonical, semigrand canonical, and charge neutral semigrand canonical ensembles
-    using a Metropolis or a Wang-Landau sampler.
+-   Achieving a more thermodynamically stable configuration by lowering the Coulomb electrostatic interaction energy, which is calculated using the Ewald Summation method. 
 
--   Special quasi-random structure generation based on either correlation vectors or
-    cluster interaction vectors.
 
--   Solving for periodic ground-states of any given cluster expansion with or without
-    electrostatics over a given supercell.
+
 
 **SROS** is built on top of [pymatgen](https://pymatgen.org) so any pre/post
 structure analysis can be done seamlessly using the various functionality
