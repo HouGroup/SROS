@@ -1,4 +1,4 @@
-<p align="center"><img src="docs/logo1.png" width="500px" alt=" "></p>
+<p align="center"><img src="docs/logo2.png" width="500px" alt=" "></p>
 
 <h1 align="center">Statistical Mechanics on Lattices</h1>
 
