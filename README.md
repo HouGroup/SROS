@@ -1,36 +1,24 @@
 <p align="center"><img src="docs/logo2.png" width="500px" alt=" "></p>
 
-<h1 align="center">Statistical Mechanics on Lattices</h1>
+<h1 align="center">Short-range Ordering based Swapping method</h1>
 
 <h4 align="center">
 
-![test](https://github.com/CederGroupHub/smol/actions/workflows/test.yml/badge.svg)
-[![Codacy Badge](https://app.codacy.com/project/badge/Coverage/f6180b5223f346d2ac9dcf9a4bcc62d9)](https://www.codacy.com/gh/CederGroupHub/smol/dashboard?utm_source=github.com&utm_medium=referral&utm_content=CederGroupHub/smol&utm_campaign=Badge_Coverage)
-[![pre-commit.ci status](https://results.pre-commit.ci/badge/github/CederGroupHub/smol/main.svg)](https://results.pre-commit.ci/latest/github/CederGroupHub/smol/main)
-[![pypi version](https://img.shields.io/pypi/v/smol?color=blue)](https://pypi.org/project/smol)
 [![Static Badge](https://img.shields.io/badge/python-3.9%2B-blue)](https://www.python.org/downloads/)
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/CederGroupHub/smol/HEAD?labpath=docs%2Fsrc%2Fnotebooks%2Findex.ipynb)
 [![status](https://joss.theoj.org/papers/e96a568ca53ee9d14548d7b8bed69b25/status.svg)](https://joss.theoj.org/papers/e96a568ca53ee9d14548d7b8bed69b25)
 
 </h4>
 
 *Lightweight but caffeinated Python implementation of computational methods
-for statistical mechanical calculations of configurational states in
-crystalline materials.*
+for construction of high-entropy disordered rocksalt cathode materials.*
 
 -----------------------------------------------------------------------------
 
-**smol** is a minimal implementation of computational methods to calculate
-statistical mechanical and thermodynamic properties of crystalline
-material systems based on the *cluster expansion* method from alloy theory and
-related methods. Although **smol** is intentionally lightweight---in terms of
-dependencies and built-in functionality---it has a modular design that closely
-follows underlying mathematical formalism and provides useful abstractions to
-easily extend existing methods or implement and test new ones.
+**SROS** is an efficiently short-range ordering based swapping (SROS) method to construct a HE-DRX model by combining density functional theory (DFT) calculations and Monte Carlo (MC) simulations. Specifically, **SROS** is a fast and efficient modeling approach to construct specific SRO in DRX structures.
 
 Functionality
 -------------
-**smol** currently includes the following functionality:
+**SROS** currently includes the following functionality:
 
 -   Defining cluster expansion functions for a given disordered structure using a
     variety of available site basis functions with and without explicit
@@ -56,16 +44,12 @@ Functionality
 -   Solving for periodic ground-states of any given cluster expansion with or without
     electrostatics over a given supercell.
 
-**smol** is built on top of [pymatgen](https://pymatgen.org) so any pre/post
+**SROS** is built on top of [pymatgen](https://pymatgen.org) so any pre/post
 structure analysis can be done seamlessly using the various functionality
 supported there.
 
 Installation
 ------------
-From pypi:
-
-    pip install smol
-
 From source:
 
 `Clone` the repository. The latest tag in the `main` branch is the stable version of the
@@ -74,38 +58,21 @@ lingering bugs. From the top level directory
 
     pip install .
 
-Although `smol` is not tested on Windows platforms, it should still run on Windows since
-there aren't any platform specific dependencies. The only known installation issue
-is building `pymatgen` dependencies. If simply running `pip install smol` fails, try
+The only known installation issue
+is building `pymatgen` dependencies. If running `pip install .` fails, try
 installing `pymatgen` with conda first:
 
     conda install -c conda-forge pymatgen
-    pip install smol
 
-You can also simply use the *environment.yml* file in the repository to install `smol`:
-
-    conda env create -f environment.yml
-    source activate smol-env
-
-Usage
------
-Refer to the [documentation](https://cedergrouphub.github.io/smol/) for details on using
-**smol**. Going through the [example notebooks](https://github.com/CederGroupHub/smol/tree/main/docs/src/notebooks)
-will also help you get started. You can run the example notebooks interactively in
-[binder](https://mybinder.org/v2/gh/CederGroupHub/smol/HEAD?labpath=docs%2Fsrc%2Fnotebooks%2Findex.ipynb).
 
 Citing
 ------
-If you use **smol** in your research, please give the repo a star :star: and refer to
-the [citing](https://cedergrouphub.github.io/smol/citing.html) page in the documentation
-for formal citation information.
+If you use **SROS** in your research, please give the repo a star :star: and refer to
+the [citing](https://github.com/Liaojh123/SRO)
 
 Contributing
 ------------
 We welcome all your contributions with open arms! Please fork and pull request any contributions.
-See the
-[developing](https://cedergrouphub.github.io/smol/developer_guide/index.html)
-page in the documentation for how to contribute.
 
 Changes
 -------
