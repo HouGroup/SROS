@@ -1,20 +1,3 @@
-"""
-代码思路：
-第一步：保持阴离子固定不动，先交换F、O周围的阳离子达到目标 alphaFLi（即target_alpha）
-第二步：保持alphaFLi不变，交换Li、TM周围的阳离子达到目标 alphaLiLi（即target_alpha_LiLi）
-
-实现第二步的做法主要是在交换离子时加上限制条件：
-    self.exchange_site(c_neighbor, d_neighbor)
-    new_alpha_LiLi = self.alpha_LiLi()
-    # 只有当交换后新alpha_LiLi比交换前旧alpha_LiLi更接近目标值，且alphaFLi不变时，交换才有效才能进入下一步
-    # 否则将原子交换回来，相当于没有进行交换操作
-    if abs(new_alpha_LiLi - target_alpha_LiLi) < abs(old_alpha_LiLi - target_alpha_LiLi) and abs(self.alpha() - target_alpha) <= tol:
-        print("More neighboring LiLi")
-    else:
-        self.exchange_site(c_neighbor, d_neighbor)
-        print("No exchange")
-"""
-
 from pymatgen.analysis.local_env import CrystalNN
 from pymatgen.analysis.local_env import BrunnerNN_real
 from pymatgen.core.structure import Structure, Element
