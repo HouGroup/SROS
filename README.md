@@ -22,6 +22,8 @@ Functionality
 
 -   Special quasi-random structure generation based on either correlation vectors or cluster interaction vectors.
 
+-   Solving the site percolation problem of percolation theory for a given set of percolation rules. These rules can be quite complex and reflect the physical interactions of the percolating species with other atomic species in the structure.
+
 -   Constructing a rational first-nearest-neighbor (1NN) coordination environment, quantified by the Warren–Cowley SRO parameter αFLi.
 
 -   Constructing a rational second-nearest-neighbor (2NN) coordination environment, quantified by the Warren–Cowley SRO parameter αLiLi.
