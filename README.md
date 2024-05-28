@@ -35,21 +35,6 @@ Functionality
 structure analysis can be done seamlessly using the various functionality
 supported there.
 
-Installation
-------------
-From source:
-
-`Clone` the repository. The latest tag in the `main` branch is the stable version of the
-code. The `main` branch has the newest tested features, but may have more
-lingering bugs. From the top level directory
-
-    pip install .
-
-The only known installation issue
-is building `pymatgen` dependencies. If running `pip install .` fails, try
-installing `pymatgen` with conda first:
-
-    conda install -c conda-forge pymatgen
 
 Citing
 ------
