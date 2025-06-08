@@ -1,6 +1,6 @@
 <p align="center"><img src="docs/logo2.png" width="500px" alt=" "></p>
 
-<h1 align="center">Short-range Ordering based Swapping method</h1>
+<h1 align="center">Short-Range Order Swapping method</h1>
 
 <h4 align="center">
 
@@ -14,7 +14,7 @@ for construction of high-entropy disordered rocksalt cathode materials.*
 
 -----------------------------------------------------------------------------
 
-**SROS** is an efficiently short-range ordering based swapping (SROS) method to construct a HE-DRX model by combining density functional theory (DFT) calculations and Monte Carlo (MC) simulations. Specifically, **SROS** is a fast and efficient modeling approach to construct specific SRO in DRX structures.
+**SROS** is an efficiently short-range order swapping (SROS) method to construct a HE-DRX model by combining density functional theory (DFT) calculations and Monte Carlo (MC) simulations. Specifically, **SROS** is a fast and efficient modeling approach to construct specific SRO in DRX structures.
 
 Functionality
 -------------
