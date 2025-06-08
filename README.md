@@ -42,6 +42,10 @@ Citing
 ------
 If you use **SROS** in your research, please give the repo a star :star:
 
+For more information about the method and for applications see:
+
+Liao J., "Modeling Short-Range Order in High-Entropy Cation-Disordered Rocksalt-Type Cathodes" Adv. Energy Mater. 2025, 2501857 (https://doi.org/10.1002/aenm.202501857)
+
 Contributing
 ------------
 We welcome all your contributions with open arms! Please fork and pull request any contributions.
