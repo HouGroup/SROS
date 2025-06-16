@@ -1,33 +1,3 @@
-"""
-Both_FLi_LiLi.py
-
-This module provides functionality for swapping cations in a crystal structure to achieve specified alpha values for FLi and LiLi.
-
-The module follows a two-step process:
-1. Achieve the target alpha value for FLi while performing cation swaps.
-2. While maintaining the achieved FLi alpha value, continue swapping cations to reach the specified alpha value for LiLi.
-
-Functions:
-    - swap_cations_both(structure, target_alpha_FLi, target_alpha_LiLi): Performs cation swaps to achieve target alpha values for FLi and LiLi.
-    - additional_function(): Any additional helper function relevant to the cation swapping process.
-
-Example Usage:
-
-    from mypackage import Both_FLi_LiLi
-    both_flilili = Both_FLi_LiLi.SRO("D:\\Users\\ASUS\\Desktop\\Computational Practice\\10.27\\TM_FLI-0.325-LLILI0.083\\TM2\\TM2_1_POSCAR")
-    both_flilili.run(50, target_alpha=0, target_alpha_LiLi=0, rate=100, tol=0.02, random_seed=2)
-
-Note:
-    - This module assumes that the crystal structure is provided in a suitable format compatible with the cation swapping algorithm.
-    - The two-step process ensures that the target alpha values for FLi and LiLi are independently achieved.
-    - The effectiveness of achieving the exact target alphas may depend on various factors, and the results should be validated.
-
-For more information on the theory and methods used, refer to the relevant literature or documentation.
-
-Author: Liaojh
-Date: January 23, 2024
-"""
-
 from pymatgen.analysis.local_env import CrystalNN
 from pymatgen.analysis.local_env import BrunnerNN_real
 from pymatgen.core.structure import Structure, Element
@@ -133,7 +103,7 @@ class SRO:
 
         for i in cation_idxs:
             # P is the probability of finding second nearest neighbor cation Li adjacent to cation Li.
-            # 第二近邻为阳离子-阳离子配位数为12
+            # The second nearest neighbor is a cation - the coordination number of the cation is 12
             P = self.bnn.get_cn_dict(structrue_dup, i).get(self.cation, 0) / self.cation_cn
             alpha_LiLi_list.append(1 - P / self.c_cation)
 
@@ -154,7 +124,7 @@ class SRO:
 
         for i in cation_idxs:
             # P is the probability of finding second nearest neighbor cation Li adjacent to cation Li.
-            # 第二近邻为阳离子-阳离子配位数为12
+            # The second nearest neighbor is a cation - the coordination number of the cation is 12
             P = self.bnn.get_cn_dict(structrue_dup, i).get(self.cation, 0) / self.cation_cn
             alphalili_dic[i] = (1 - P / self.c_cation)
 
@@ -292,7 +262,7 @@ class SRO:
         # print(a_neighbor, b_neighbor)
         old_alpha = self.a
         if random.random() < prob:
-            if not target:  # 如果 target 为 False
+            if not target:  
                 self.exchange_site(a_neighbor, b_neighbor)
                 new_alpha, new_dict = self.alpha_new(a_neighbor, b_neighbor)
                 if abs(new_alpha - target_alpha) <= abs(old_alpha - target_alpha):
@@ -306,7 +276,7 @@ class SRO:
             else:
                 print("No exchange")
         else:
-            if target:  # 如果 target 为 True
+            if target:  
                 self.exchange_site(a_neighbor, b_neighbor)
                 new_alpha, new_alpdict = self.alpha_new(a_neighbor, b_neighbor)
                 if abs(new_alpha - target_alpha) <= abs(old_alpha - target_alpha):
@@ -338,8 +308,8 @@ class SRO:
 
         c_idxs = self.get_idxs("Li")
         d_idxs = list(set(self.all_cation_idxs) - set(c_idxs))
-        c_site = c_idxs[random.randrange(len(c_idxs))]  # c_site是任意一个Li的位置
-        d_site = d_idxs[random.randrange(len(d_idxs))]  # d_site是任意一个TM的位置
+        c_site = c_idxs[random.randrange(len(c_idxs))]  # "c_site" represents the position of any arbitrary Li atom.
+        d_site = d_idxs[random.randrange(len(d_idxs))]  # "d_site" represents the position of any arbitrary TM atom.
 
         target = True
         m = 0
@@ -349,11 +319,11 @@ class SRO:
             if (self.structure.species[c_neighbor] == Element(self.cation) and self.structure.species[
                 d_neighbor] != Element(self.cation)):
                 break
-                # 即如果Li周围选中的是Li，TM周围选中的是TM，则保持target=True并进入下一步
+                # That is, if the selection around Li is Li and the selection around TM is TM, then keep target=True and proceed to the next step.
             elif self.structure.species[c_neighbor] != Element(self.cation) and self.structure.species[
                 d_neighbor] == Element(self.cation):
                 target = False
-                # 即如果Li周围选中的是TM，TM周围选中的是Li，则使target=False并进入下一步
+                # That is, if the selection around Li is TM and the selection around TM is Li, then set target to False and proceed to the next step.
                 break
 
             m += 1
@@ -363,8 +333,8 @@ class SRO:
                 return self.a_LiLi
 
         old_alpha_LiLi = self.a_LiLi
-        if random.random() < prob:  # 结构Li周围的Li比目标值少
-            if not target:  # 这里对应的是target=False，即Li周围选的不是Li，而TM周围选的是Li
+        if random.random() < prob:  # The amount of Li surrounding the structure Li is less than the target value.
+            if not target:  # This corresponds to target=False, meaning that in this case, Li was not selected around the Li area, but Li was selected around the TM area.
                 self.exchange_site(c_neighbor, d_neighbor)
                 new_alpha_LiLi, new_dict_LiLi = self.alpha_LiLi_new(c_neighbor, d_neighbor, False)
                 new_alpha, new_dict = self.alpha_new(c_neighbor, d_neighbor)
@@ -380,8 +350,8 @@ class SRO:
                     print("No exchange")
             else:
                 print("No exchange")
-        else:  # 结构Li周围的Li比目标值多
-            if target:  # 这里对应的是target=True，即Li周围选的是Li，而TM周围选的不是Li
+        else:  # The amount of Li surrounding the structure Li is higher than the target value.
+            if target:  # This corresponds to target=True, meaning that in the Li area, Li is selected, while in the TM area, Li is not selected.
                 self.exchange_site(c_neighbor, d_neighbor)
                 new_alpha_LiLi, new_dict_LiLi = self.alpha_LiLi_new(c_neighbor, d_neighbor, True)
                 new_alpha, new_dict = self.alpha_new(c_neighbor, d_neighbor)
@@ -399,6 +369,28 @@ class SRO:
                 print("No exchange")
         return self.a_LiLi
 
+    def run_lif(self, max_steps: int,
+            target_alpha: Union[int, float] = 0,
+            # target_alpha_LiLi: Union[int, float] = 0,
+            rate: Union[int, float] = 1,
+            tol: Union[int, float] = 0.05,
+            random_seed: Union[None, int] = None,
+            ):
+
+        random.seed(random_seed)
+        print("Innitial alpha:", self.a, "Innitial alphaLiLi:", self.a_LiLi)
+        for i in range(max_steps):
+            if abs(self.a - target_alpha) <= tol:
+                # print("Target alpha reached")
+                break
+            self.exchange(target_alpha, rate, random_seed=random.randrange(1000))
+            print("Steps：", i, "New alpha:", self.a)
+
+        if abs(self.alpha_fix() - target_alpha) <= tol:
+            print("target alpha_LiF reached.")
+        else:
+            print("Target alpha_LiF not reached")
+
     def run(self, max_steps: int,
             target_alpha: Union[int, float] = 0,
             target_alpha_LiLi: Union[int, float] = 0,
@@ -406,17 +398,15 @@ class SRO:
             tol: Union[int, float] = 0.05,
             random_seed: Union[None, int] = None,
             ):
-        """
-        主函数，执行任务
-        """
+
         random.seed(random_seed)
         print("Innitial alpha:", self.a, "Innitial alphaLiLi:", self.a_LiLi)
         for i in range(max_steps):
             if abs(self.a - target_alpha) <= tol:
-                print("Target alpha reached")
+                print("Target alpha_LiF reached")
                 break
             self.exchange(target_alpha, rate, random_seed=random.randrange(1000))
-            print("步数：", i, "New alpha:", self.a)
+            print("Steps：", i, "New alpha:", self.a)
 
         self.a_LiLi, self.a_LiLi_dict = self.alpha_LiLi()
         if abs(self.alpha_fix() - target_alpha) <= tol:
@@ -425,14 +415,198 @@ class SRO:
                     print("Target alpha_LiLi reached")
                     break
                 self.exchange_LiLi(target_alpha_LiLi, target_alpha, tol, rate, random_seed=random.randrange(1000))
-                print("步数：", i, "New alpha_LiLi:", self.a_LiLi)
+                print("Steps：", i, "New alpha_LiLi:", self.a_LiLi)
         else:
-            print("Target alpha not reached")
+            print("Target alpha_LiF not reached")
 
         if abs(self.alpha_LiLi_fix() - target_alpha_LiLi) <= tol:
             print("Both target alpha and alpha_LiLi reached.")
         else:
             print("Target alpha_LiLi not reached")
+            
 
     def to_file(self, path):
-        self.structure.to(filename=path)
+        self.structure.to(filename=path, fmt='poscar')
+
+
+import copy
+import numpy as np
+from monty.serialization import loadfn, dumpfn
+from pymatgen.analysis.ewald import EwaldSummation
+from pymatgen.core import Structure
+from smol.cofe import ClusterSubspace
+from smol.cofe.extern import EwaldTerm
+from smol.moca import EwaldProcessor
+from smol.moca import Ensemble
+from smol.moca import Sampler
+from pymatgen.transformations.standard_transformations import OrderDisorderedStructureTransformation
+
+class Ewald:
+    def __init__(
+            self,
+            structure_path: str,
+            out_path: str,
+            tm_type: str,
+    ):
+        input_str = Structure.from_file(structure_path)
+        dumpfn(input_str, 'input_file.json')
+
+        if tm_type == "TM2":
+            self.tm2_json_file('input_file.json', 'input_file1.json')
+        elif tm_type == "TM4":
+            self.tm4_json_file('input_file.json', 'input_file1.json')
+        elif tm_type == "TM6":
+            self.tm6_json_file('input_file.json', 'input_file1.json')
+        else:
+            raise ValueError(f"Unsupported tm_type: {tm_type}. Use 'TM2', 'TM4', or 'TM6'.")
+            
+        input_str = loadfn('input_file1.json')
+
+        empty_cutoff = {} # Defining the cut-offs as an empty dictionary will generate a subspace with only the empty cluster
+        subspace = ClusterSubspace.from_cutoffs(
+            structure=input_str, cutoffs=empty_cutoff, supercell_size='O2-'
+        )
+        subspace.add_external_term(EwaldTerm(eta=None)) # Add the external Ewald Term
+
+        # The supercell with which we will run MC on
+        sc_matrix = np.array([
+            [1, 0, 0],
+            [0, 1, 0],
+            [0, 0, 1]
+        ])
+        # Specifying the dielectric constant, the inverse of which is parametrized when fitting a CE with electrostatics (Example 1-1).
+        dielectric = 5.0
+        # Creating the Ewald Processor
+        ewald_proc = EwaldProcessor(
+            cluster_subspace=subspace,
+            supercell_matrix=sc_matrix,
+            ewald_term=EwaldTerm(),
+            coefficient=1/dielectric
+        )
+
+        # Create the canonical ensemble directly from the Ewald Processor, without creating a Cluster Expansion.
+        ensemble = Ensemble(processor=ewald_proc)
+        # If the goal is to enumerate new structures for DFT calculations, it may be wise to limit the size of
+        # your supercell such that a relaxation calculation is feasible.
+        # The thermodynamics may not be the most realistic, but you can generate training structures
+        # that have relatively low electrostatic energies, which may translate to lower DFT energies.
+        print(f'The supercell size for the processor is {ensemble.processor.size} prims.')
+        print(f'The ensemble has a total of {ensemble.num_sites} sites.')
+        print(f'The active sublattices are:')
+        # for sublattice in ensemble.sublattices:
+        #     print(sublattice)
+
+        sampler = Sampler.from_ensemble(ensemble, temperature=2000)
+        # print(f"Sampling information: {sampler.samples.metadata}")
+
+        # Here we will just use the order disordered transformation from
+        # pymatgen to get an ordered version of a prim supercell.
+        # The structure will have the same composition set in the prim.
+        transformation = OrderDisorderedStructureTransformation(algo=2)
+
+        supercell = input_str.copy()
+        supercell.make_supercell(sc_matrix)
+
+        test_struct = transformation.apply_transformation(supercell)
+        # print(test_struct.composition)
+
+        init_occu = ensemble.processor.occupancy_from_structure(test_struct)
+
+        # Setting up the range of temperatures for simulated annealing. We start at very
+        # high temperatures to approach the random limit. At each temperature, a MC simulation is performed.
+        # At the lowest temperatures, you may find that you converge to a ground state.
+
+        temps = np.logspace(4, 2, 10)
+        #temps = np.array([2000])
+
+        mc_steps = 100000 # Defining number of MC steps at each temperature
+        n_thin_by = 10 # Number to thin by
+
+        # Start simulated annealing.
+        sampler.anneal(
+            temperatures=temps,
+            mcmc_steps=mc_steps,
+            initial_occupancies=init_occu,
+            thin_by=n_thin_by, # Saving every 10 samples
+            progress=True # Show the progress bar to know how far along you are
+        )
+
+        # Samples are saved in a sample container
+        samples = sampler.samples
+
+        # print(f'Fraction of successful steps (efficiency) {sampler.efficiency()}')
+        # print(f'The last step energy is {samples.get_energies()[-1]} eV')
+        # print(f'The minimum energy in trajectory is {samples.get_minimum_energy()} eV')
+
+        # You can get the minimum energy structure and current structure
+        # by using the ensemble processor
+        curr_s = ensemble.processor.structure_from_occupancy(samples.get_occupancies()[-1])
+        min_s = ensemble.processor.structure_from_occupancy(samples.get_minimum_energy_occupancy())
+
+        n = int(mc_steps / 10)  # number of samples saved for the MC at each temperature
+        energies = sampler.samples.get_energies()
+        mc_temps = list()  # Create list of temperatures that correspond to the energies
+
+        for t in temps:
+            mc_temps.extend([t for i in range(n)])
+
+        # Obtain the average and standard deviation of energy at each temperature.
+        for t in temps:
+            plot_inds = np.where(mc_temps == t)[0]
+            energies_t = np.array([energies[ind] for ind in plot_inds]) / ewald_proc.size
+            avg_en = round(np.average(energies_t), 3)
+            std_en = round(np.std(energies_t), 4)
+            # print(f'At T = {round(t, 2)} K \nAverage energy = {avg_en} eV/prim \nStd dev = {std_en} eV/prim \n')
+
+        lowest_en = sampler.samples.get_minimum_energy() / ewald_proc.size
+        lowest_en_occu = sampler.samples.get_minimum_energy_occupancy()
+        lowest_en_struct = ensemble.processor.structure_from_occupancy(lowest_en_occu)
+
+        lowest_en_struct.to(filename=out_path,fmt="POSCAR")
+
+    
+    def tm2_json_file(self, input_filename, output_filename):
+        with open(input_filename, 'r') as file:
+            content = file.read()
+
+        # Replace all {"element": "Li", "occu": 1} with {"element": "Li", "oxidation_state": 1.0, "occu": 1}
+        content = content.replace('{"element": "Li", "occu": 1}', '{"element": "Li", "oxidation_state": 1.0, "occu": 1}')
+        content = content.replace('{"element": "Mn", "occu": 1}', '{"element": "Mn", "oxidation_state": 3.0, "occu": 0.571}, {"element": "Ti", "oxidation_state": 4.0, "occu": 0.429}')
+        content = content.replace('{"element": "Ti", "occu": 1}', '{"element": "Mn", "oxidation_state": 3.0, "occu": 0.571}, {"element": "Ti", "oxidation_state": 4.0, "occu": 0.429}')
+        content = content.replace('{"element": "O", "occu": 1}', '{"element": "O", "oxidation_state": -2.0, "occu": 1.0}')
+        content = content.replace('{"element": "F", "occu": 1}', '{"element": "F", "oxidation_state": -1.0, "occu": 1.0}')
+
+        with open(output_filename, 'w') as file:
+            file.write(content)
+
+    def tm4_json_file(self, input_filename, output_filename):
+        with open(input_filename, 'r') as file:
+            content = file.read()
+
+        # Replace all {"element": "Li", "occu": 1} with {"element": "Li", "oxidation_state": 1.0, "occu": 1}
+        content = content.replace('{"element": "Li", "occu": 1}','{"element": "Li", "oxidation_state": 1.0, "occu": 1}')
+        content = content.replace('{"element": "Mn", "occu": 1}','{"element": "Mn", "oxidation_state": 2.0, "occu": 0.2857},{"element": "Mn", "oxidation_state": 3.0, "occu": 0.2857}, {"element": "Ti", "oxidation_state": 4.0, "occu": 0.1429}, {"element": "Nb", "oxidation_state": 5.0, "occu": 0.2857}')
+        content = content.replace('{"element": "Ti", "occu": 1}','{"element": "Mn", "oxidation_state": 2.0, "occu": 0.2857},{"element": "Mn", "oxidation_state": 3.0, "occu": 0.2857}, {"element": "Ti", "oxidation_state": 4.0, "occu": 0.1429}, {"element": "Nb", "oxidation_state": 5.0, "occu": 0.2857}')
+        content = content.replace('{"element": "Nb", "occu": 1}','{"element": "Mn", "oxidation_state": 2.0, "occu": 0.2857},{"element": "Mn", "oxidation_state": 3.0, "occu": 0.2857}, {"element": "Ti", "oxidation_state": 4.0, "occu": 0.1429}, {"element": "Nb", "oxidation_state": 5.0, "occu": 0.2857}')
+        content = content.replace('{"element": "O", "occu": 1}','{"element": "O", "oxidation_state": -2.0, "occu": 1.0}')
+        content = content.replace('{"element": "F", "occu": 1}','{"element": "F", "oxidation_state": -1.0, "occu": 1.0}')
+
+        with open(output_filename, 'w') as file:
+            file.write(content)
+
+    def tm6_json_file(self, input_filename, output_filename):
+        with open(input_filename, 'r') as file:
+            content = file.read()
+
+        # Replace all {"element": "Li", "occu": 1} with {"element": "Li", "oxidation_state": 1.0, "occu": 1}
+        content = content.replace('{"element": "Li", "occu": 1}','{"element": "Li", "oxidation_state": 1.0, "occu": 1}')
+        content = content.replace('{"element": "Mn", "occu": 1}','{"element": "Mn", "oxidation_state": 2.0, "occu": 0.143},{"element": "Mn", "oxidation_state": 3.0, "occu": 0.143}, {"element": "Co", "oxidation_state": 2.0, "occu": 0.143},{"element": "Cr", "oxidation_state": 3.0, "occu": 0.143},{"element": "Ti", "oxidation_state": 4.0, "occu": 0.143}, {"element": "Nb", "oxidation_state": 5.0, "occu": 0.285}')
+        content = content.replace('{"element": "Co", "occu": 1}','{"element": "Mn", "oxidation_state": 2.0, "occu": 0.143},{"element": "Mn", "oxidation_state": 3.0, "occu": 0.143}, {"element": "Co", "oxidation_state": 2.0, "occu": 0.143},{"element": "Cr", "oxidation_state": 3.0, "occu": 0.143},{"element": "Ti", "oxidation_state": 4.0, "occu": 0.143}, {"element": "Nb", "oxidation_state": 5.0, "occu": 0.285}')
+        content = content.replace('{"element": "Cr", "occu": 1}','{"element": "Mn", "oxidation_state": 2.0, "occu": 0.143},{"element": "Mn", "oxidation_state": 3.0, "occu": 0.143}, {"element": "Co", "oxidation_state": 2.0, "occu": 0.143},{"element": "Cr", "oxidation_state": 3.0, "occu": 0.143},{"element": "Ti", "oxidation_state": 4.0, "occu": 0.143}, {"element": "Nb", "oxidation_state": 5.0, "occu": 0.285}')
+        content = content.replace('{"element": "Ti", "occu": 1}','{"element": "Mn", "oxidation_state": 2.0, "occu": 0.143},{"element": "Mn", "oxidation_state": 3.0, "occu": 0.143}, {"element": "Co", "oxidation_state": 2.0, "occu": 0.143},{"element": "Cr", "oxidation_state": 3.0, "occu": 0.143},{"element": "Ti", "oxidation_state": 4.0, "occu": 0.143}, {"element": "Nb", "oxidation_state": 5.0, "occu": 0.285}')
+        content = content.replace('{"element": "Nb", "occu": 1}','{"element": "Mn", "oxidation_state": 2.0, "occu": 0.143},{"element": "Mn", "oxidation_state": 3.0, "occu": 0.143}, {"element": "Co", "oxidation_state": 2.0, "occu": 0.143},{"element": "Cr", "oxidation_state": 3.0, "occu": 0.143},{"element": "Ti", "oxidation_state": 4.0, "occu": 0.143}, {"element": "Nb", "oxidation_state": 5.0, "occu": 0.285}')
+        content = content.replace('{"element": "O", "occu": 1}','{"element": "O", "oxidation_state": -2.0, "occu": 1.0}')
+        content = content.replace('{"element": "F", "occu": 1}','{"element": "F", "oxidation_state": -1.0, "occu": 1.0}')
+
+        with open(output_filename, 'w') as file:
+            file.write(content)
