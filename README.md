@@ -50,7 +50,7 @@ If you use **SROS** in your research, please consider citing our paper:
 **Liao, J., Chen, H., Xie, Y., Li, Z., Tan, S., Zhou, S., Jiang, L., Zhang, X., Liu, M., He, Y.-B., Kang, F., Lun, Z., Zhao, S., Hou, T.** (2025). *Modeling Short-Range Order in High-Entropy Cation-Disordered Rocksalt-Type Cathodes*. **Advanced Energy Materials**, 2501857. 
 
 [![DOI](https://img.shields.io/badge/DOI-10.1002/aenm.202501857-blue)](https://doi.org/10.1002/aenm.202501857)
-[![PDF](https://img.shields.io/badge/Download-PDF-red)](./docs/AdvancedEnergyMaterials-2025-Liao-Modeling_Short‐Range_Order_in_High‐Entropy_Cation‐Disordered_Rocksalt‐Type.pdf)
+[![PDF](https://img.shields.io/badge/Download-PDF-red)](https://www.researchgate.net/publication/392468426_Modeling_Short-Range_Order_in_High-Entropy_Cation-Disordered_Rocksalt-Type_Cathodes)
 
 ```bibtex
 @article{Liao2025SROS,
