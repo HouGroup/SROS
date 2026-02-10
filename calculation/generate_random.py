@@ -19,7 +19,7 @@ from pymatgen.command_line.mcsqs_caller import run_mcsqs
 from .reorder_structure import reorder_atoms
 
 # ----------------------------------------------------------------------
-# 基础 NaCl 原型与超胞构建
+# Basic NaCl prototype and supercell construction
 # ----------------------------------------------------------------------
 
 def create_original_structure() -> Structure:
@@ -63,7 +63,7 @@ def make_supercell_matrix(scaling_matrix=None) -> Structure:
 
 
 # ----------------------------------------------------------------------
-# 成分受控的 Li/Mn/Ti/O 随机替换
+# Random substitution of Li/Mn/Ti/O with controlled components
 # ----------------------------------------------------------------------
 
 def modify_structure(li_content: float, mn_content: float, input_structure: Structure) -> Structure:
@@ -87,39 +87,32 @@ def modify_structure(li_content: float, mn_content: float, input_structure: Stru
     for i in cl_sites:
         structure[i] = Element("O")
 
-    # Ti 含量
     ti_content = 2 - li_content - mn_content
 
-    # 所有 Li 位置
     li_sites = [i for i, site in enumerate(structure) if site.species_string == "Li"]
-
-    # 随机选部分 Li → Mn
     num_mn = int(round(len(li_sites) * mn_content / 2))
     selected_mn = random.sample(li_sites, num_mn)
     for i in selected_mn:
         structure[i] = Element("Mn")
-
-    # 剩余 Li → Ti
     remaining_li = [idx for idx in li_sites if idx not in selected_mn]
     num_ti = int(round(len(li_sites) * ti_content / 2))
     selected_ti = random.sample(remaining_li, num_ti)
     for i in selected_ti:
         structure[i] = Element("Ti")
 
-    # 统一元素顺序
     ordered_structure = reorder_atoms(structure, ["Li", "Mn", "Ti", "O"])
     return ordered_structure
 
 
 # ----------------------------------------------------------------------
-# Na/Cl → Li/TM/O/F 的 TM2/TM4/TM6 规则替换
+# The TM2/TM4/TM6 rule substitution of Na/Cl → Li/TM/O/F
 # ----------------------------------------------------------------------
 
 def modify_structure_HEDRX(structure: Structure, tm_type: str, seed: int | None = None) -> Structure:
     """
-    在 NaCl 结构上按 TM2/TM4/TM6 方案进行 Na/Cl -> Li/TM/O/F 替换。
+    On the NaCl structure, Na/Cl -> Li/TM/O/F was replaced according to the TM2/TM4/TM6 scheme.
     """
-    # 1. 定义替换规则，并增加 "order" 键用于后续排序
+    # 1. Define the replacement rule and add the "order" key for subsequent sorting
     substitution_rules = {
         "TM2": {
             "Na": [("Li", 0.65), ("Mn", 0.20), ("Ti", 0.15)],
@@ -149,12 +142,10 @@ def modify_structure_HEDRX(structure: Structure, tm_type: str, seed: int | None 
 
     new_structure = structure.copy()
 
-    # 2. 识别 Na 和 Cl 位点 (使用 species_string 更加稳健)
     na_sites = [i for i, site in enumerate(new_structure) if site.species_string == "Na"]
     cl_sites = [i for i, site in enumerate(new_structure) if site.species_string == "Cl"]
 
     if not na_sites or not cl_sites:
-        # 如果是因为结构已经被排序或替换过导致找不到 Na/Cl，这里会报错提醒
         raise ValueError("Input structure does not contain 'Na' or 'Cl' sites. "
                          "Check if the structure was already modified.")
 
@@ -163,10 +154,8 @@ def modify_structure_HEDRX(structure: Structure, tm_type: str, seed: int | None 
         site_count = len(site_indices)
         substitutions = []
 
-        # 计算每个元素的实际数量
         counts = [int(round(site_count * fraction)) for _, fraction in substitution_list]
         
-        # 修正因四舍五入导致的数量差异
         count_diff = site_count - sum(counts)
         counts[-1] += count_diff
 
@@ -183,12 +172,10 @@ def modify_structure_HEDRX(structure: Structure, tm_type: str, seed: int | None 
     na_substitutions = _substitute_sites(na_sites, na_rules)
     cl_substitutions = _substitute_sites(cl_sites, cl_rules)
 
-    # 3. 执行原子替换
+    # 3. Execute atom replacement
     for elem, site_idx in na_substitutions + cl_substitutions:
         new_structure.replace(site_idx, Element(elem))
 
-    # 4. 排序：使用该 tm_type 对应的 order 列表
-    # 这样可以确保 Nb, F, Co 等元素都在排序范围内，避免 RuntimeError
     target_order = substitution_rules[tm_type]["order"]
     ordered_structure = reorder_atoms(new_structure, target_order)
 
@@ -196,7 +183,7 @@ def modify_structure_HEDRX(structure: Structure, tm_type: str, seed: int | None 
 
 
 # ----------------------------------------------------------------------
-# SQS 结构生成：SMOL & ATAT
+# SQS structure generation: SMOL & ATAT
 # ----------------------------------------------------------------------
 
 def generate_sqs_structure_with_smol(
@@ -263,7 +250,7 @@ def generate_sqs_structure_with_atat(
     search_time: int = 15,
 ):
     """
-    使用 ATAT 的 `mcsqs` 生成 SQS 结构（需要本地安装 ATAT）。
+    Generate SQS structures using ATAT's `mcsqs` (requires local installation of ATAT).
     """
     if species is None:
         species = [
