@@ -5,6 +5,7 @@ import numpy as np
 from typing import Union
 import random
 import math
+from .reorder_structure import reorder_atoms
 
 
 class SRO:
@@ -425,8 +426,18 @@ class SRO:
             print("Target alpha_LiLi not reached")
             
 
+
     def to_file(self, path):
-        self.structure.to(filename=path, fmt='poscar')
+        # 1. Automatically get all element symbols present in the structure and sort them alphabetically
+        # symbol_set returns a set, e.g., {'Li', 'O', 'Mn', 'Ti'}
+        unique_elements = sorted(self.structure.symbol_set)
+        
+        # 2. Sort using the dynamically obtained list
+        # Here reorder_atoms is the function you defined earlier
+        ordered_structure = reorder_atoms(self.structure, unique_elements)
+        
+        # 3. Export the file
+        ordered_structure.to(filename=path, fmt='poscar')
 
 
 import copy
@@ -562,7 +573,13 @@ class Ewald:
         lowest_en_occu = sampler.samples.get_minimum_energy_occupancy()
         lowest_en_struct = ensemble.processor.structure_from_occupancy(lowest_en_occu)
 
-        lowest_en_struct.to(filename=out_path,fmt="POSCAR")
+        # lowest_en_struct.to(filename=out_path,fmt="POSCAR")
+        # save structure
+        struct_to_save = lowest_en_struct.copy()
+        struct_to_save.remove_oxidation_states()
+        unique_elements = sorted(struct_to_save.symbol_set)
+        ordered_lowest_en_struct = reorder_atoms(struct_to_save, unique_elements)
+        ordered_lowest_en_struct.to(filename=out_path, fmt="POSCAR")
 
     
     def tm2_json_file(self, input_filename, output_filename):
