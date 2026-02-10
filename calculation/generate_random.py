@@ -1,151 +1,294 @@
-import numpy as np
-from pymatgen.core import Structure, Element
+"""
+Tools to build NaCl-based supercells and substitute them into DRX-like
+Li/TM/O/F structures, including:
+
+- simple random substitution with fixed TM2/TM4/TM6 rules
+- composition-controlled Li/Mn/Ti/O substitution
+- SQS generation helpers (SMOL / ATAT)
+
+"""
+
+import random
 from collections import defaultdict
 
-def create_original_structure():
+import numpy as np
+from pymatgen.core import Lattice, Structure, Element
+from smol.capp.generate.special.sqs import StochasticSQSGenerator
+from pymatgen.command_line.mcsqs_caller import run_mcsqs
+
+from .reorder_structure import reorder_atoms
+
+# ----------------------------------------------------------------------
+# 基础 NaCl 原型与超胞构建
+# ----------------------------------------------------------------------
+
+def create_original_structure() -> Structure:
     """
-    Create a prototype structure based on input parameters.
+    build NaCl cells: Fm-3m, Na at (0,0,0), Cl at (0.5,0.5,0.5).
     """
-    # Lattice vectors (3x3 matrix, units: Å)
     lattice = [
         [0.0, 2.1, 2.1],
         [2.1, 0.0, 2.1],
-        [2.1, 2.1, 0.0]
+        [2.1, 2.1, 0.0],
     ]
-    
-    # Atomic species and fractional coordinates
-    species = ["Na", "Cl"]  # Species sequence
-    coords = [
-        [0.0, 0.0, 0.0],    # Na atom coordinates
-        [0.5, 0.5, 0.5]     # Cl atom coordinates
-    ]
-    
-    # Create pymatgen Structure object
-    structure = Structure(lattice, species, coords)
-    return structure
 
-def make_supercell(scaling_factors=(2, 4, 5)):
+    species = ["Na", "Cl"]
+    coords = [
+        [0.0, 0.0, 0.0],
+        [0.5, 0.5, 0.5],
+    ]
+
+    return Structure(lattice, species, coords)
+
+
+
+def make_supercell_matrix(scaling_matrix=None) -> Structure:
     """
-    Create a supercell by scaling the prototype structure along lattice vectors.
-    
-    Args:
-        scaling_factors: Tuple of scaling factors for (a, b, c) directions
-        
-    Returns:
-        Structure: Supercell structure
+    使用一般 3x3 整数矩阵构造 NaCl 超胞。
+
+    等价于原 `generate_random_any_composition.make_supercell`。
     """
-    # Create prototype structure
+    if scaling_matrix is None:
+        scaling_matrix = [[-1, 1, 1], [1, -1, 1], [1, 1, -1]]
+
     original = create_original_structure()
-    
-    # Generate diagonal scaling matrix (e.g., (2,4,5) → [[2,0,0], [0,4,0], [0,0,5]])
-    scaling_matrix = np.diag(scaling_factors)
-    
-    # Create supercell
+    scaling_matrix = np.array(scaling_matrix, dtype=int)
+
+    if scaling_matrix.shape != (3, 3):
+        raise ValueError("Scaling matrix must be a 3x3 integer matrix")
+
     supercell = original.copy()
     supercell.make_supercell(scaling_matrix)
-    
     return supercell
 
-def substitute_elements(structure: Structure, tm_type: str, seed: int = None) -> Structure:
+
+# ----------------------------------------------------------------------
+# 成分受控的 Li/Mn/Ti/O 随机替换
+# ----------------------------------------------------------------------
+
+def modify_structure(li_content: float, mn_content: float, input_structure: Structure) -> Structure:
     """
-    Perform element substitution in a Na-Cl structure while maintaining exact concentration ratios.
-    
-    Args:
-        structure: Original structure containing Na and Cl sites
-        tm_type: Substitution scheme type ("TM2", "TM4", "TM6")
-        seed: Random seed for reproducibility (optional)
-        
-    Returns:
-        Structure: Modified structure after substitution
+    按给定 Li / Mn 含量，对 NaCl 超胞进行随机替换，得到 Li/Mn/Ti/O 结构。
+
+    - Na → Li
+    - Cl → O
+    - 部分 Li → Mn
+    - 剩余 Li → Ti
     """
-    # Define substitution rules
+    structure = input_structure.copy()
+
+    # Na → Li
+    na_sites = [i for i, site in enumerate(structure) if site.species_string == "Na"]
+    for i in na_sites:
+        structure[i] = Element("Li")
+
+    # Cl → O
+    cl_sites = [i for i, site in enumerate(structure) if site.species_string == "Cl"]
+    for i in cl_sites:
+        structure[i] = Element("O")
+
+    # Ti 含量
+    ti_content = 2 - li_content - mn_content
+
+    # 所有 Li 位置
+    li_sites = [i for i, site in enumerate(structure) if site.species_string == "Li"]
+
+    # 随机选部分 Li → Mn
+    num_mn = int(round(len(li_sites) * mn_content / 2))
+    selected_mn = random.sample(li_sites, num_mn)
+    for i in selected_mn:
+        structure[i] = Element("Mn")
+
+    # 剩余 Li → Ti
+    remaining_li = [idx for idx in li_sites if idx not in selected_mn]
+    num_ti = int(round(len(li_sites) * ti_content / 2))
+    selected_ti = random.sample(remaining_li, num_ti)
+    for i in selected_ti:
+        structure[i] = Element("Ti")
+
+    # 统一元素顺序
+    ordered_structure = reorder_atoms(structure, ["Li", "Mn", "Ti", "O"])
+    return ordered_structure
+
+
+# ----------------------------------------------------------------------
+# Na/Cl → Li/TM/O/F 的 TM2/TM4/TM6 规则替换
+# ----------------------------------------------------------------------
+
+def modify_structure_HEDRX(structure: Structure, tm_type: str, seed: int | None = None) -> Structure:
+    """
+    在 NaCl 结构上按 TM2/TM4/TM6 方案进行 Na/Cl -> Li/TM/O/F 替换。
+    """
+    # 1. 定义替换规则，并增加 "order" 键用于后续排序
     substitution_rules = {
         "TM2": {
             "Na": [("Li", 0.65), ("Mn", 0.20), ("Ti", 0.15)],
-            "Cl": [("O", 0.85), ("F", 0.15)]
+            "Cl": [("O", 0.85), ("F", 0.15)],
+            "order": ["Li", "Mn", "Ti", "O", "F"]
         },
         "TM4": {
             "Na": [("Li", 0.65), ("Mn", 0.20), ("Ti", 0.05), ("Nb", 0.10)],
-            "Cl": [("O", 0.85), ("F", 0.15)]
+            "Cl": [("O", 0.85), ("F", 0.15)],
+            "order": ["Li", "Mn", "Ti", "Nb", "O", "F"]
         },
         "TM6": {
-            "Na": [("Li", 0.65), ("Mn", 0.10), ("Co", 0.05), ("Cr", 0.05),
-                   ("Ti", 0.05), ("Nb", 0.10)],
-            "Cl": [("O", 0.85), ("F", 0.15)]
-        }
+            "Na": [
+                ("Li", 0.65), ("Mn", 0.10), ("Co", 0.05), ("Cr", 0.05), ("Ti", 0.05), ("Nb", 0.10),
+            ],
+            "Cl": [("O", 0.85), ("F", 0.15)],
+            "order": ["Li", "Mn", "Co", "Cr", "Ti", "Nb", "O", "F"]
+        },
     }
 
-    # Validate input parameters
     if tm_type not in substitution_rules:
-        valid_types = ", ".join(substitution_rules.keys())
-        raise ValueError(f"Invalid tm_type: '{tm_type}'. Must be one of: {valid_types}")
+        raise ValueError(f"Unsupported tm_type: {tm_type}. Use 'TM2', 'TM4', or 'TM6'.")
 
-    # Set random seed if provided
     if seed is not None:
         np.random.seed(seed)
+        random.seed(seed)
 
-    # Create working copy of structure
-    modified_structure = structure.copy()
+    new_structure = structure.copy()
 
-    # Collect site indices
-    na_sites = [i for i, site in enumerate(modified_structure) 
-                if site.species_string == "Na"]
-    cl_sites = [i for i, site in enumerate(modified_structure) 
-                if site.species_string == "Cl"]
+    # 2. 识别 Na 和 Cl 位点 (使用 species_string 更加稳健)
+    na_sites = [i for i, site in enumerate(new_structure) if site.species_string == "Na"]
+    cl_sites = [i for i, site in enumerate(new_structure) if site.species_string == "Cl"]
 
-    # Helper function for proportional substitution
-    def substitute_atoms(site_indices, substitution_spec):
-        """
-        Perform proportional substitution on atomic sites
-        
-        Args:
-            site_indices: List of atomic indices to substitute
-            substitution_spec: List of (element, fraction) tuples
-            
-        Returns:
-            List of (element, index) substitutions to apply
-        """
-        np.random.shuffle(site_indices)  # Randomize selection order
+    if not na_sites or not cl_sites:
+        # 如果是因为结构已经被排序或替换过导致找不到 Na/Cl，这里会报错提醒
+        raise ValueError("Input structure does not contain 'Na' or 'Cl' sites. "
+                         "Check if the structure was already modified.")
+
+    def _substitute_sites(site_indices, substitution_list):
+        np.random.shuffle(site_indices)
         site_count = len(site_indices)
         substitutions = []
+
+        # 计算每个元素的实际数量
+        counts = [int(round(site_count * fraction)) for _, fraction in substitution_list]
         
-        # Calculate proportional counts for each element
-        counts = []
-        for element_symbol, concentration in substitution_spec:
-            count = int(round(site_count * concentration))
-            counts.append(count)
-        
-        # Adjust for rounding errors
-        total_count = sum(counts)
-        count_discrepancy = site_count - total_count
-        if count_discrepancy != 0:
-            counts[-1] += count_discrepancy  # Adjust last element
-        
-        # Assign substitutions
-        start_idx = 0
-        for (element_symbol, _), count in zip(substitution_spec, counts):
-            end_idx = start_idx + count
-            substitutions.extend([
-                (element_symbol, idx) 
-                for idx in site_indices[start_idx:end_idx]
-            ])
-            start_idx = end_idx
+        # 修正因四舍五入导致的数量差异
+        count_diff = site_count - sum(counts)
+        counts[-1] += count_diff
+
+        start_index = 0
+        for (elem, _), count in zip(substitution_list, counts):
+            for i in range(start_index, start_index + count):
+                substitutions.append((elem, site_indices[i]))
+            start_index += count
         return substitutions
 
-    # Perform Na site substitutions
-    na_substitutions = substitute_atoms(
-        na_sites, 
-        substitution_rules[tm_type]["Na"]
-    )
-    
-    # Perform Cl site substitutions
-    cl_substitutions = substitute_atoms(
-        cl_sites, 
-        substitution_rules[tm_type]["Cl"]
+    na_rules = substitution_rules[tm_type]["Na"]
+    cl_rules = substitution_rules[tm_type]["Cl"]
+
+    na_substitutions = _substitute_sites(na_sites, na_rules)
+    cl_substitutions = _substitute_sites(cl_sites, cl_rules)
+
+    # 3. 执行原子替换
+    for elem, site_idx in na_substitutions + cl_substitutions:
+        new_structure.replace(site_idx, Element(elem))
+
+    # 4. 排序：使用该 tm_type 对应的 order 列表
+    # 这样可以确保 Nb, F, Co 等元素都在排序范围内，避免 RuntimeError
+    target_order = substitution_rules[tm_type]["order"]
+    ordered_structure = reorder_atoms(new_structure, target_order)
+
+    return ordered_structure
+
+
+# ----------------------------------------------------------------------
+# SQS 结构生成：SMOL & ATAT
+# ----------------------------------------------------------------------
+
+def generate_sqs_structure_with_smol(
+    species=None,
+    supercell_matrix=None,
+    cutoffs=None,
+    mcmc_steps: int = 10000,
+    temperatures=None,
+    max_save_num=None,
+    progress: bool = True,
+    num_best_structures: int = 1,
+):
+    """
+    使用 SMOL 生成 Special Quasi-random Structures (SQS)。
+    """
+    if species is None:
+        species = [
+            {"Li": 1.2 / 2.0, "Mn": 0.4 / 2.0, "Ti": 0.4 / 2.0},
+            {"O": 1.0},
+        ]
+    if supercell_matrix is None:
+        supercell_matrix = [[5, 0, 0], [0, 6, 0], [0, 0, 8]]
+    if cutoffs is None:
+        cutoffs = {2: 7, 3: 5}
+
+    structure = Structure.from_spacegroup(
+        "Fm-3m",
+        lattice=Lattice.cubic(4.2),
+        species=species,
+        coords=[[0, 0, 0], [0.5, 0.5, 0.5]],
     )
 
-    # Apply all substitutions
-    for element_symbol, site_index in na_substitutions + cl_substitutions:
-        modified_structure.replace(site_index, Element(element_symbol))
+    primitive = structure.get_primitive_structure()
+    supercell = primitive.make_supercell(supercell_matrix)
 
-    return modified_structure
+    sqs_generator = StochasticSQSGenerator.from_structure(
+        structure=supercell,
+        cutoffs=cutoffs,
+        supercell_size=1,
+        feature_type="correlation",
+        match_weight=1.0,
+    )
+
+    sqs_generator.generate(
+        mcmc_steps=mcmc_steps,
+        temperatures=temperatures,
+        max_save_num=max_save_num,
+        progress=progress,
+    )
+
+    best_sqs = sqs_generator.get_best_sqs(
+        num_structures=num_best_structures,
+        remove_duplicates=True,
+    )
+
+    return best_sqs if best_sqs else None
+
+
+def generate_sqs_structure_with_atat(
+    species=None,
+    clusters=None,
+    scaling=36,
+    instances: int = 1,
+    search_time: int = 15,
+):
+    """
+    使用 ATAT 的 `mcsqs` 生成 SQS 结构（需要本地安装 ATAT）。
+    """
+    if species is None:
+        species = [
+            {"Li": 1.2 / 2.0, "Mn": 0.4 / 2.0, "Ti": 0.4 / 2.0},
+            {"O": 1.0},
+        ]
+    if clusters is None:
+        clusters = {2: 7, 3: 5}
+
+    structure = Structure.from_spacegroup(
+        "Fm-3m",
+        lattice=Lattice.cubic(4.2),
+        species=species,
+        coords=[[0, 0, 0], [0.5, 0.5, 0.5]],
+    )
+
+    primitive = structure.get_primitive_structure()
+
+    mcsqs_result = run_mcsqs(
+        structure=primitive,
+        clusters=clusters,
+        scaling=scaling,
+        instances=instances,
+        search_time=search_time,
+    )
+
+    return mcsqs_result.bestsqs
+
