@@ -1,50 +1,66 @@
-<p align="center"><img src="docs/logo2.png" width="500px" alt=" "></p>
+<p align="center"><img src="docs/logo2.png" width="500px" alt="SROS Logo"></p>
 
-<h1 align="center">Short-Range Order Swapping method</h1>
+<h1 align="center">Short-Range Order Swapping (SROS) Method</h1>
 
 <h4 align="center">
 
 [![Static Badge](https://img.shields.io/badge/python-3.9%2B-blue)](https://www.python.org/downloads/)
-[![status](https://joss.theoj.org/papers/e96a568ca53ee9d14548d7b8bed69b25/status.svg)](https://joss.theoj.org/papers/e96a568ca53ee9d14548d7b8bed69b25)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![DOI](http://img.shields.io/badge/DOI-10.1002/aenm.202501857-B31B1B.svg)](https://doi.org/10.1002/aenm.202501857)
 
 </h4>
 
-*Lightweight but caffeinated Python implementation of computational methods
-for construction of high-entropy disordered rocksalt cathode materials.*
+*Efficient atomistic modeling of Short-Range Order in High-Entropy Cation-Disordered Rocksalt-Type Cathodes.*
 
 -----------------------------------------------------------------------------
 
-**SROS** is an efficiently short-range order swapping (SROS) method to construct a HE-DRX model by combining density functional theory (DFT) calculations and Monte Carlo (MC) simulations. Specifically, **SROS** is a fast and efficient modeling approach to construct specific SRO in DRX structures.
+**SROS** (Short-Range Order Swapping) is a Python-based computational framework developed to construct atomistic models for high-entropy (HE) ceramics, with a specific focus on **Cation-Disordered Rocksalt (DRX)** cathodes. 
 
-Functionality
--------------
-**SROS** currently includes the following functionality:
+Unlike conventional approaches that involve computationally expensive many-body interaction fitting (e.g., Cluster Expansion), **SROS** utilizes a **descriptor-based swapping algorithm**. By leveraging **Warren-Cowley SRO parameters** as key descriptors, it efficiently generates structures that accurately represent experimental features (validated by neutron pair distribution function data) while significantly reducing computational costs.
 
--   Special quasi-random structure generation based on either correlation vectors or cluster interaction vectors.
+## Key Features & Functionality
 
--   Solving the site percolation problem of percolation theory for a given set of percolation rules. These rules can be quite complex and reflect the physical interactions of the percolating species with other atomic species in the structure.
+**SROS** provides a robust workflow for modeling structural complexity in multicomponent systems:
 
--   Constructing a rational first-nearest-neighbor (1NN) coordination environment, quantified by the Warren–Cowley SRO parameter αFLi.
+*   **Descriptor-Based SRO Construction**: 
+    *   Efficiently constructs atomistic models with specific Short-Range Order (SRO) targets.
+    *   Quantifies local ordering using **Warren–Cowley (WC) parameters** ($\alpha_{ij}^{(n)}$) for both cation and anion sublattices.
+    *   Supports complex high-entropy compositions (e.g., quinary systems like TM4/TM6).
 
--   Constructing a rational second-nearest-neighbor (2NN) coordination environment, quantified by the Warren–Cowley SRO parameter αLiLi.
+*   **Targeted Coordination Tuning**:
+    *   **1NN Environment**: Rational construction of first-nearest-neighbor clusters (e.g., optimizing $\alpha_{Li-F}^{(1)}$ for Li-F rich environments).
+    *   **2NN Environment**: Tuning of second-nearest-neighbor correlations (e.g., controlling cation clustering $\alpha_{Li-Li}^{(2)}$).
 
--   Achieving a more thermodynamically stable configuration by lowering the Coulomb electrostatic interaction energy, which is calculated using the Ewald Summation method. 
+*   **Electrostatic Optimization**: 
+    *   Integrates **Simulated Annealing** with **Ewald Summation** to minimize Coulomb electrostatic interaction energy, ensuring thermodynamically reasonable configurations.
 
+*   **Transport & Percolation Analysis**:
+    *   Solves site percolation problems to evaluate Li-ion diffusion pathways (e.g., 0-TM channels).
+    *   Analyzes the impact of configurational entropy on percolating networks.
 
+*   **Versatility**: 
+    *   While optimized for DRX oxyfluorides ($Li_{1+x}TM_{1-x}O_{2-y}F_y$), the method is adaptable to other crystal systems characterized by long-range disorder, such as **Garnet-type oxides** (e.g., LLZTO).
 
+**SROS** is built on top of [pymatgen](https://pymatgen.org), allowing seamless integration with high-throughput materials analysis workflows.
 
-**SROS** is built on top of [pymatgen](https://pymatgen.org) so any pre/post
-structure analysis can be done seamlessly using the various functionality
-supported there.
+## Citing
 
+If you use **SROS** in your research, please consider citing our paper:
 
-Citing
-------
-If you use **SROS** in your research, please give the repo a star :star:
+**Liao, J., Chen, H., Xie, Y., Li, Z., Tan, S., Zhou, S., Jiang, L., Zhang, X., Liu, M., He, Y.-B., Kang, F., Lun, Z., Zhao, S., Hou, T.** (2025). *Modeling Short-Range Order in High-Entropy Cation-Disordered Rocksalt-Type Cathodes*. **Advanced Energy Materials**, 2501857. 
 
-For more information about the method and for applications see:
+**DOI:** [10.1002/aenm.202501857](https://doi.org/10.1002/aenm.202501857)
 
-Liao J., "Modeling Short-Range Order in High-Entropy Cation-Disordered Rocksalt-Type Cathodes" Adv. Energy Mater. 2025, 2501857 (https://doi.org/10.1002/aenm.202501857)
+```bibtex
+@article{Liao2025SROS,
+  title = {Modeling Short-Range Order in High-Entropy Cation-Disordered Rocksalt-Type Cathodes},
+  author = {Liao, Junhong and Chen, Hao and Xie, Yaoshu and Li, Zihui and Tan, Shendong and Zhou, Shuyu and Jiang, Lu and Zhang, Xiang and Liu, Ming and He, Yan-Bing and Kang, Feiyu and Lun, Zhengyan and Zhao, Shixi and Hou, Tingzheng},
+  journal = {Advanced Energy Materials},
+  year = {2025},
+  volume = {},
+  pages = {2501857},
+  doi = {10.1002/aenm.202501857}
+}
 
 Contributing
 ------------
