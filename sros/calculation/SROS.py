@@ -235,22 +235,24 @@ class SRO:
             self,
             target_alpha: Union[int, float] = 0,
             rate: Union[int, float] = 1,
-            random_seed: Union[None, int] = None
+            random_seed: Union[None, int] = None,
+            rng: Optional[random.Random] = None,
     ):
         """
         Perform exchange of Li and M once.
         """
-        random.seed(random_seed)
+        if rng is None:
+            rng = random.Random(random_seed) if random_seed is not None else random
         diff = self.a - target_alpha
         prob = self.sigmoid(diff * rate)
 
-        a_site = self.a_idxs[random.randrange(len(self.a_idxs))]
-        b_site = self.b_idxs[random.randrange(len(self.b_idxs))]
+        a_site = self.a_idxs[rng.randrange(len(self.a_idxs))]
+        b_site = self.b_idxs[rng.randrange(len(self.b_idxs))]
         target = True
         m = 0
         while True:
-            a_neighbor = int(self.cnn.get_nn(self.structure, a_site)[random.randrange(self.anion_cn)].index)
-            b_neighbor = int(self.cnn.get_nn(self.structure, b_site)[random.randrange(self.anion_cn)].index)
+            a_neighbor = int(self.cnn.get_nn(self.structure, a_site)[rng.randrange(self.anion_cn)].index)
+            b_neighbor = int(self.cnn.get_nn(self.structure, b_site)[rng.randrange(self.anion_cn)].index)
             if (self.structure.species[a_neighbor] == Element(self.cation) and self.structure.species[
                 b_neighbor] != Element(self.cation)):
                 break
@@ -266,7 +268,7 @@ class SRO:
 
         # print(a_neighbor, b_neighbor)
         old_alpha = self.a
-        if random.random() < prob:
+        if rng.random() < prob:
             if not target:  
                 self.exchange_site(a_neighbor, b_neighbor)
                 new_alpha, new_dict = self.alpha_new(a_neighbor, b_neighbor)
@@ -302,25 +304,27 @@ class SRO:
             target_alpha: Union[int, float] = 0,
             tol: Union[int, float] = 0.05,
             rate: Union[int, float] = 1,
-            random_seed: Union[None, int] = None
+            random_seed: Union[None, int] = None,
+            rng: Optional[random.Random] = None,
     ):
         """
         Perform exchange of Li and M around Li once.
         """
-        random.seed(random_seed)
+        if rng is None:
+            rng = random.Random(random_seed) if random_seed is not None else random
         diff = self.a_LiLi - target_alpha_LiLi
         prob = self.sigmoid(diff * rate)
 
         c_idxs = self.get_idxs(self.cation)
         d_idxs = list(set(self.all_cation_idxs) - set(c_idxs))
-        c_site = c_idxs[random.randrange(len(c_idxs))]  # "c_site" represents the position of any arbitrary Li atom.
-        d_site = d_idxs[random.randrange(len(d_idxs))]  # "d_site" represents the position of any arbitrary TM atom.
+        c_site = c_idxs[rng.randrange(len(c_idxs))]  # "c_site" represents the position of any arbitrary Li atom.
+        d_site = d_idxs[rng.randrange(len(d_idxs))]  # "d_site" represents the position of any arbitrary TM atom.
 
         target = True
         m = 0
         while True:
-            c_neighbor = int(self.get_Li_2NN_environment(c_site)[random.randrange(self.cation_cn)].index)
-            d_neighbor = int(self.get_Li_2NN_environment(d_site)[random.randrange(self.cation_cn)].index)
+            c_neighbor = int(self.get_Li_2NN_environment(c_site)[rng.randrange(self.cation_cn)].index)
+            d_neighbor = int(self.get_Li_2NN_environment(d_site)[rng.randrange(self.cation_cn)].index)
             if (self.structure.species[c_neighbor] == Element(self.cation) and self.structure.species[
                 d_neighbor] != Element(self.cation)):
                 break
@@ -338,7 +342,7 @@ class SRO:
                 return self.a_LiLi
 
         old_alpha_LiLi = self.a_LiLi
-        if random.random() < prob:  # The amount of Li surrounding the structure Li is less than the target value.
+        if rng.random() < prob:  # The amount of Li surrounding the structure Li is less than the target value.
             if not target:  # This corresponds to target=False, meaning that in this case, Li was not selected around the Li area, but Li was selected around the TM area.
                 self.exchange_site(c_neighbor, d_neighbor)
                 new_alpha_LiLi, new_dict_LiLi = self.alpha_LiLi_new(c_neighbor, d_neighbor, False)
@@ -386,13 +390,13 @@ class SRO:
         if tol is not None:
             tolerance = tol
 
-        random.seed(random_seed)
+        rng = random.Random(random_seed)
         print("Innitial alpha:", self.a, "Innitial alphaLiLi:", self.a_LiLi)
         for i in range(max_steps):
             if self._is_reached(self.a, target_alpha, tolerance):
                 # print("Target alpha reached")
                 break
-            self.exchange(target_alpha, rate, random_seed=random.randrange(1000))
+            self.exchange(target_alpha, rate, rng=rng)
             print("Steps：", i, "New alpha:", self.a)
 
         self.a = self.alpha_fix()
@@ -423,14 +427,14 @@ class SRO:
         if tol is not None:
             tolerance = tol
 
-        random.seed(random_seed)
+        rng = random.Random(random_seed)
         print("Innitial alpha:", self.a, "Innitial alphaLiLi:", self.a_LiLi)
         alpha_steps = 0
         for i in range(max_steps):
             if self._is_reached(self.a, target_alpha, tolerance):
                 print("Target alpha_LiF reached")
                 break
-            self.exchange(target_alpha, rate, random_seed=random.randrange(1000))
+            self.exchange(target_alpha, rate, rng=rng)
             print("Steps：", i, "New alpha:", self.a)
             alpha_steps = i + 1
 
@@ -449,7 +453,7 @@ class SRO:
                     target_alpha,
                     tolerance,
                     rate,
-                    random_seed=random.randrange(1000),
+                    rng=rng,
                 )
                 print("Steps：", i, "New alpha_LiLi:", self.a_LiLi)
                 lili_steps = i + 1

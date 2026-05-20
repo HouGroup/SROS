@@ -1,3 +1,5 @@
+import random
+
 from sros.calculation.SROS import SRO
 
 
@@ -46,3 +48,27 @@ def test_run_supports_legacy_tol_alias():
 
     assert status["tolerance"] == 0.05
     assert status["all_reached"] is True
+
+
+def test_run_uses_one_persistent_rng_for_exchange_steps():
+    sro = _fake_sro(alpha=1.0, alpha_lili=0.0)
+    draws = []
+
+    def exchange(*args, **kwargs):
+        rng = kwargs["rng"]
+        draws.append(rng.random())
+        sro.a -= 0.1
+        return sro.a
+
+    sro.exchange = exchange
+
+    sro.run(
+        max_steps=3,
+        target_alpha=0.0,
+        target_alpha_LiLi=0.0,
+        tolerance=0.0,
+        random_seed=123,
+    )
+
+    expected_rng = random.Random(123)
+    assert draws == [expected_rng.random() for _ in range(3)]
