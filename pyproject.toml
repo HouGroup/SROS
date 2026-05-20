@@ -32,7 +32,7 @@ dev = [
 ]
 
 [tool.setuptools]
-packages = ["calculation"]
+packages = ["calculation", "sros", "sros.calculation"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

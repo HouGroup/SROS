@@ -1,7 +1,7 @@
 import pytest
 from pymatgen.core import Lattice, Structure
 
-from calculation.reorder_structure import reorder_atoms, reorder_atoms_flexible
+from sros.calculation.reorder_structure import reorder_atoms, reorder_atoms_flexible
 
 
 def test_reorder_atoms_preserves_all_site_property_keys():
