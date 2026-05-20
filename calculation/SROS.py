@@ -74,9 +74,9 @@ class SRO:
     def alpha_new(self, a_neighbor: int, b_neighbor: int):
         changed_anion_ls = []
         for i in range(6):
-            if self.cnn.get_nn(self.structure, a_neighbor)[i].specie == Element('F'):
+            if self.cnn.get_nn(self.structure, a_neighbor)[i].specie == Element(self.anion_a):
                 changed_anion_ls.append(self.cnn.get_nn(self.structure, a_neighbor)[i].index)
-            if self.cnn.get_nn(self.structure, b_neighbor)[i].specie == Element('F'):
+            if self.cnn.get_nn(self.structure, b_neighbor)[i].specie == Element(self.anion_a):
                 changed_anion_ls.append(self.cnn.get_nn(self.structure, b_neighbor)[i].index)
 
         new_dict = self.a_dict.copy()
@@ -142,9 +142,9 @@ class SRO:
 
         changed_cation_ls = []
         for i in range(12):
-            if self.bnn.get_nn(structrue_dup, c_neighbor)[i].specie == Element('Li'):
+            if self.bnn.get_nn(structrue_dup, c_neighbor)[i].specie == Element(self.cation):
                 changed_cation_ls.append(self.bnn.get_nn(structrue_dup, c_neighbor)[i].index)
-            if self.bnn.get_nn(structrue_dup, d_neighbor)[i].specie == Element('Li'):
+            if self.bnn.get_nn(structrue_dup, d_neighbor)[i].specie == Element(self.cation):
                 changed_cation_ls.append(self.bnn.get_nn(structrue_dup, d_neighbor)[i].index)
 
         new_dict_LiLi = self.a_LiLi_dict.copy()
@@ -307,7 +307,7 @@ class SRO:
         diff = self.a_LiLi - target_alpha_LiLi
         prob = self.sigmoid(diff * rate)
 
-        c_idxs = self.get_idxs("Li")
+        c_idxs = self.get_idxs(self.cation)
         d_idxs = list(set(self.all_cation_idxs) - set(c_idxs))
         c_site = c_idxs[random.randrange(len(c_idxs))]  # "c_site" represents the position of any arbitrary Li atom.
         d_site = d_idxs[random.randrange(len(d_idxs))]  # "d_site" represents the position of any arbitrary TM atom.
