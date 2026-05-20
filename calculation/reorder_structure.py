@@ -1,5 +1,5 @@
 from pymatgen.core import Structure
-from typing import List
+from typing import Iterable, List
 
 
 def reorder_atoms(structure: Structure, input_order: List[str]) -> Structure:
@@ -46,3 +46,18 @@ def reorder_atoms(structure: Structure, input_order: List[str]) -> Structure:
         coords_are_cartesian=False,
         site_properties=site_properties
     )
+
+
+def reorder_atoms_flexible(structure: Structure, input_order: Iterable[str]) -> Structure:
+    """
+    Reorder atoms by the requested element sequence while preserving any
+    elements that are not listed in ``input_order``.
+
+    This is useful for workflows where oxidation states, model outputs, or
+    extra dopants introduce species beyond the main composition list.
+    """
+    requested_order = list(input_order)
+    remaining_order = sorted(
+        {site.specie.symbol for site in structure} - set(requested_order)
+    )
+    return reorder_atoms(structure, requested_order + remaining_order)

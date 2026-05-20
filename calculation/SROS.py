@@ -22,8 +22,8 @@ class SRO:
         self.anion_b = anion_b
         self.cation = cation
         self.c_cation = c_cation
-        self.a_idxs = self.get_idxs("F")  # Obtain all index numbers of F
-        self.b_idxs = self.get_idxs("O")
+        self.a_idxs = self.get_idxs(self.anion_a)
+        self.b_idxs = self.get_idxs(self.anion_b)
         self.all_cation_idxs = list(set(range(self.structure.num_sites)) - set(self.a_idxs) - set(self.b_idxs))
         self.cnn = CrystalNN()
         self.bnn = BrunnerNN_real()
