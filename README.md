@@ -73,9 +73,9 @@ random_structure.to(filename="random_TM4.vasp", fmt="poscar")
 sro = SRO("random_TM4.vasp", anion_a="F", anion_b="O", cation="Li")
 status = sro.run(
     max_steps=1000,
-    target_alpha=-0.05,
-    target_alpha_LiLi=0.0,
-    tolerance=0.05,
+    target_alpha=-0.2,
+    target_alpha_LiLi=0.06,
+    tolerance=0.01,
     random_seed=42,
 )
 print(status)
