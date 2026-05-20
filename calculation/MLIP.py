@@ -1,12 +1,6 @@
-import json
-import numpy as np
 from pymatgen.io.ase import AseAtomsAdaptor
 from sevenn.sevennet_calculator import SevenNetCalculator
-from ase.io import read
-import torch
-from tqdm import tqdm
 from pymatgen.core.structure import Structure
-import random
 from ase.optimize import BFGS  # For structure optimization
 
 def initialize_calculator(model_path, device='cpu'):
@@ -32,7 +26,7 @@ def relax_structure(input_file, calculator):
         calculator: Initialized SevenNet calculator
         
     Returns:
-        tuple: (relaxed Structure object, final potential energy)
+        relaxed Structure object
     """
     # Read input structure
     structure = Structure.from_file(input_file)
