@@ -1,5 +1,6 @@
-from pymatgen.core import Structure
 from typing import Iterable, List
+
+from pymatgen.core import Structure
 
 
 def reorder_atoms(structure: Structure, input_order: List[str]) -> Structure:
@@ -28,15 +29,15 @@ def reorder_atoms(structure: Structure, input_order: List[str]) -> Structure:
             f"{missing} atoms ({', '.join(missing_elements)}) not in order list. "
             f"Check if input structure matches the specified order."
         )
-        raise RuntimeError(error_message)
+        raise ValueError(error_message)
 
-    # Process site properties (convert list to dictionary)
-    site_properties = {}
-    if ordered_sites and hasattr(ordered_sites[0], 'properties'):
-        # Get all property keys
-        keys = ordered_sites[0].properties.keys()
-        for key in keys:
-            site_properties[key] = [site.properties.get(key) for site in ordered_sites]
+    site_property_keys = sorted(
+        {key for site in ordered_sites for key in site.properties}
+    )
+    site_properties = {
+        key: [site.properties.get(key) for site in ordered_sites]
+        for key in site_property_keys
+    }
 
     # Create new structure (preserving lattice parameters)
     return Structure(

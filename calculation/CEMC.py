@@ -1,12 +1,9 @@
-from pymatgen.core import Structure, Element, Site, Species
-from smol.io import load_work
 import random
+
 import numpy as np
+from smol.io import load_work
 from smol.moca import Ensemble
 from smol.moca import Sampler
-import os
-import shutil
-import re
 
 from .reorder_structure import reorder_atoms_flexible
 
