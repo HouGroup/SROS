@@ -62,8 +62,8 @@ python -m pip install -e ".[mlip]"
 ## Quick Start
 
 ```python
-from calculation.generate_random import create_original_structure, modify_structure_HEDRX
-from calculation.SROS import SRO
+from sros.calculation.generate_random import create_original_structure, modify_structure_HEDRX
+from sros.calculation.SROS import SRO
 
 structure = create_original_structure()
 structure.make_supercell([[5, 0, 0], [0, 6, 0], [0, 0, 8]])
@@ -71,7 +71,14 @@ random_structure = modify_structure_HEDRX(structure, tm_type="TM4", seed=42)
 random_structure.to(filename="random_TM4.vasp", fmt="poscar")
 
 sro = SRO("random_TM4.vasp", anion_a="F", anion_b="O", cation="Li")
-sro.run(max_steps=1000, target_alpha=-0.2, target_alpha_LiLi=0.0, random_seed=42)
+status = sro.run(
+    max_steps=1000,
+    target_alpha=-0.05,
+    target_alpha_LiLi=0.0,
+    tolerance=0.05,
+    random_seed=42,
+)
+print(status)
 sro.to_file("sro_tuned_TM4.vasp")
 ```
 

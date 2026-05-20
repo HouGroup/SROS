@@ -3,7 +3,7 @@ import random
 import numpy as np
 from pymatgen.core import Lattice, Structure
 
-from calculation.CEMC import assign_element_numbers, calculate_mn_ratios
+from sros.calculation.CEMC import assign_element_numbers, calculate_mn_ratios
 
 
 def test_calculate_mn_ratios_for_charge_balanced_composition():

@@ -2,7 +2,7 @@ from collections import Counter
 
 import pytest
 
-from calculation.generate_random import (
+from sros.calculation.generate_random import (
     create_original_structure,
     make_supercell_matrix,
     modify_structure_HEDRX,
