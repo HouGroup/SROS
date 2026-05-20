@@ -43,6 +43,45 @@ Unlike conventional approaches that involve computationally expensive many-body 
 
 **SROS** is built on top of [pymatgen](https://pymatgen.org), allowing seamless integration with high-throughput materials analysis workflows.
 
+## Installation
+
+Clone the repository and install it in editable mode:
+
+```bash
+git clone https://github.com/Liaojh123/SROS.git
+cd SROS
+python -m pip install -e .
+```
+
+For MLIP-based relaxation workflows, install the optional dependencies:
+
+```bash
+python -m pip install -e ".[mlip]"
+```
+
+## Quick Start
+
+```python
+from sros.calculation.generate_random import create_original_structure, modify_structure_HEDRX
+from sros.calculation.SROS import SRO
+
+structure = create_original_structure()
+structure.make_supercell([[5, 0, 0], [0, 6, 0], [0, 0, 8]])
+random_structure = modify_structure_HEDRX(structure, tm_type="TM4", seed=42)
+random_structure.to(filename="random_TM4.vasp", fmt="poscar")
+
+sro = SRO("random_TM4.vasp", anion_a="F", anion_b="O", cation="Li")
+status = sro.run(
+    max_steps=1000,
+    target_alpha=-0.2,
+    target_alpha_LiLi=0.06,
+    tolerance=0.01,
+    random_seed=42,
+)
+print(status)
+sro.to_file("sro_tuned_TM4.vasp")
+```
+
 ## Citing
 
 If you use **SROS** in your research, please consider citing our paper:
@@ -62,9 +101,8 @@ If you use **SROS** in your research, please consider citing our paper:
   pages = {2501857},
   doi = {10.1002/aenm.202501857}
 }
+```
 
 Contributing
 ------------
 We welcome all your contributions with open arms! Please fork and pull request any contributions.
-
-

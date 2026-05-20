@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sros"
+version = "0.1.0"
+description = "Short-Range Order Swapping tools for high-entropy cation-disordered rocksalt cathodes."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [
+  { name = "Junhong Liao" }
+]
+dependencies = [
+  "numpy",
+  "scipy",
+  "pymatgen",
+  "smol",
+  "monty",
+  "ase",
+  "tqdm",
+]
+
+[project.optional-dependencies]
+mlip = [
+  "torch",
+  "sevenn",
+]
+dev = [
+  "pytest",
+]
+
+[tool.setuptools]
+packages = ["calculation", "sros", "sros.calculation"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
